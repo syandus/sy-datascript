@@ -1,1 +1,8 @@
+# cache or compiler output
+/.cpcache
 /node_modules
+/.shadow-cljs
+/cljs-runtime
+
+# output
+/sy-datascript.js

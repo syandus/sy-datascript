@@ -1,0 +1,22 @@
+{:deps {:aliases [:handler]}
+
+ ; :nrepl false
+ :nrepl {:middleware [cider.piggieback/wrap-cljs-repl]}
+
+ :http {:port 3450
+        :host "0.0.0.0"}
+
+ :cache-blockers #{main}
+ :builds
+ {:handler
+  {:target :node-library
+   :exports {:main main/main}
+   :js-options {:js-package-dirs ["node_modules"]}
+
+   :devtools {:preloads [devtools.preload]}
+   :release {:compiler-options {:optimizations :advanced
+                                :source-map true
+                                :source-map-detail-level :all}}
+
+   :output-dir "./"
+   :output-to "./sy-datascript.js"}}}

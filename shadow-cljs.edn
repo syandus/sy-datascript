@@ -1,19 +1,16 @@
-{:deps {:aliases [:handler]}
+{:deps {:aliases [:sy-datascript]}
 
  ; :nrepl false
  :nrepl {:middleware [cider.piggieback/wrap-cljs-repl]}
 
- :http {:port 3450
-        :host "0.0.0.0"}
-
- :cache-blockers #{main}
+ :cache-blockers #{}
  :builds
- {:handler
+ {:sy-datascript
   {:target :node-library
    :exports {:main main/main}
    :js-options {:js-package-dirs ["node_modules"]}
 
-   :devtools {:preloads [devtools.preload]}
+   ; :devtools {:preloads [devtools.preload]}
    :release {:compiler-options {:optimizations :advanced
                                 :source-map true
                                 :source-map-detail-level :all}}

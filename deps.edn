@@ -6,46 +6,12 @@
  :deps {;; official clojure
         org.clojure/clojure {:mvn/version "1.10.1"}
         org.clojure/clojurescript {:mvn/version "1.10.773"}
-        org.clojure/core.async {:mvn/version "1.3.610"}
-        org.clojure/spec.alpha {:mvn/version "0.2.187"}
-        org.clojure/core.cache {:mvn/version "1.0.207"}
-        org.clojure/core.rrb-vector {:mvn/version "0.1.2"}
-        com.cognitect/transit-cljs {:mvn/version "0.8.264"}
-
-        ;; spec
-        metosin/spec-tools {:mvn/version "0.10.4"}
-        expound/expound {:mvn/version "0.8.6"}
-        ;; contains fix for s.replace() error in ClojureScript
-        ; expound/expound
-        ; ^:depot/ignore
-        ; {:git/url "https://github.com/bhb/expound.git"
-        ;  :sha "121006405379b472a78317413aaec43896c160d6"}
-
-        orchestra/orchestra {:mvn/version "2020.09.18-1"}
-
-        ;; swiss army
-        org.clojars.mmb90/cljs-cache {:mvn/version "0.1.4"}
-        codox/codox {:mvn/version "0.10.7"}
-        com.fzakaria/slf4j-timbre {:mvn/version "0.3.20"}
-        com.taoensso/timbre {:mvn/version "5.1.0"}
-        com.rpl/specter {:mvn/version "1.1.3"}
-        fipp/fipp {:mvn/version "0.6.23"}
-        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.2"}
-        funcool/promesa {:mvn/version "6.0.0"}
-        ; tick {:mvn/version "0.4.25-alpha"}
-        com.andrewmcveigh/cljs-time {:mvn/version "0.5.2"}
 
         ;; DB
         datascript/datascript {:mvn/version "1.0.1"}
         reagent/reagent {:mvn/version "0.10.0"}
         denistakeda/posh {:mvn/version "0.5.8"}
 
-        ;; REPL and code utils
-        binaryage/devtools {:mvn/version "1.0.2"}
-        cljfmt/cljfmt {:mvn/version "0.7.0"}
-        nrepl/nrepl {:mvn/version "0.8.3"}
-        cider/cider-nrepl {:mvn/version "0.25.4"}
-        cider/piggieback {:mvn/version "0.5.2"}
         olical/depot {:mvn/version "2.0.1"}}
 
  :aliases

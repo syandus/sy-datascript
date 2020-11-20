@@ -37,6 +37,8 @@
 
         ;; DB
         datascript/datascript {:mvn/version "1.0.1"}
+        reagent/reagent {:mvn/version "0.10.0"}
+        denistakeda/posh {:mvn/version "0.5.8"}
 
         ;; REPL and code utils
         binaryage/devtools {:mvn/version "1.0.2"}
@@ -47,5 +49,5 @@
         olical/depot {:mvn/version "2.0.1"}}
 
  :aliases
- {:handler {:extra-deps {thheller/shadow-cljs {:mvn/version "2.11.7"}}}
+ {:sy-datascript {:extra-deps {thheller/shadow-cljs {:mvn/version "2.11.7"}}}
   :outdated {:main-opts ["-m" "depot.outdated.main"]}}}

@@ -1,4 +1,7 @@
-(ns main)
+(ns main
+  (:require
+   [cljfmt.core]
+   [sy-datascript.core]))
 
 (defn main []
-  (js/console.log "hello"))
+  (js/console.log "Hello, World!"))

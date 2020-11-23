@@ -32,6 +32,20 @@
                      (map-indexed (fn [i id*] [:db/add [id-attr id*] index-attr i])))]
     tx-data))
 
+(defn new-item [db [_op id-attr index-attr tx]]
+  (let [series (ds/q '[:find ?item-uuid ?i
+                       :in $ ?id-attr ?index-attr
+                       :where
+                       [?e ?id-attr ?item-uuid]
+                       [?e ?index-attr ?i]]
+                     db id-attr index-attr)
+        n (if (= 0 (count series))
+            0
+            (->> (map second series)
+                 (reduce max)
+                 (inc)))]
+    [(assoc tx :i n)]))
+
 (defn eval-tx [db tx]
   (cond
    (map? tx) [tx]
@@ -40,6 +54,7 @@
      (case op
        :sy/only-if-exists (only-if-exists db tx)
        :sy/reorder-item (reorder-item db tx)
+       :sy/new-item (new-item db tx)
        [tx]))
    :else [tx]))
 
@@ -139,5 +154,39 @@
     (is (= 1 (get-attr :i [:uuid "b"])))
     (is (= 2 (get-attr :i [:uuid "c"])))
     (is (= 3 (get-attr :i [:uuid "d"])))
+
+    nil))
+
+(deftest new-item-0-test
+  (let [*conn (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*conn [k] e)
+                       k))]
+    (transact! *conn [[:sy/new-item :uuid :i {:uuid "a"}]])
+    (is (= 0 (get-attr :i [:uuid "a"])))
+
+    nil))
+
+(deftest new-item-1-test
+  (let [*conn (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*conn [k] e)
+                       k))]
+    (transact! *conn [{:uuid "a" :i 0}])
+    (transact! *conn [[:sy/new-item :uuid :i {:uuid "b"}]])
+    (is (= 0 (get-attr :i [:uuid "a"])))
+    (is (= 1 (get-attr :i [:uuid "b"])))
+
+    nil))
+
+(deftest new-item-misorder-test
+  (let [*conn (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*conn [k] e)
+                       k))]
+    (transact! *conn [{:uuid "a" :i 1}])
+    (transact! *conn [[:sy/new-item :uuid :i {:uuid "b"}]])
+    (is (= 1 (get-attr :i [:uuid "a"])))
+    (is (= 2 (get-attr :i [:uuid "b"])))
 
     nil))

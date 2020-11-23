@@ -28,7 +28,7 @@
         old-index (some (fn [[id* i]] (if (= id id*) i nil)) series)
         tx-data (->> (map first series)
                      (setval [old-index] NONE)
-                     (setval [(srange new-index new-index)] id)
+                     (setval [(srange new-index new-index)] [id])
                      (map-indexed (fn [i id*] [:db/add [id-attr id*] index-attr i])))]
     tx-data))
 

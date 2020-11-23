@@ -43,6 +43,8 @@
        [tx]))
    :else [tx]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn sy-transact!
   "Similar to datascript or posh `transact!`, but support Syandus extensions to
   the language."

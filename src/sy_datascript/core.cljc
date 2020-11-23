@@ -60,9 +60,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn with
+  "Similar to datascript `with`, but supports Syandus extensions to the
+  language."
+  ([db tx-data] (with db tx-data nil))
+  ([db tx-data tx-meta]
+   (let [tx-data (->> (mapv (partial eval-tx db) tx-data)
+                      (mapcat identity)
+                      (vec))]
+     (ds/with db tx-data tx-meta))))
+
 (defn sy-transact!
-  "Similar to datascript or posh `transact!`, but support Syandus extensions to
-  the language."
+  "Similar to datascript or posh `transact!`, but supports Syandus extensions
+  to the language."
   ([transact-fn *conn tx-data] (sy-transact! transact-fn *conn tx-data nil))
   ([transact-fn *conn tx-data tx-meta]
    (assert (vector? tx-data) "`tx-data` must be a vector!")

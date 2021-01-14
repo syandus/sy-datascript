@@ -175,13 +175,18 @@
     nil))
 
 (deftest migrate-item-across-parented-series-test
-  (let [*db (ds/create-conn
-             {:parent/uuid {:db/unique :db.unique/identity}
-              :parent/child {:db/valueType :db.type/ref
-                             :db/cardinality :db.cardinality/many}
-              :child/uuid {:db/unique :db.unique/identity}})
+  (let [schema {:parent/uuid {:db/unique :db.unique/identity}
+                :parent/child {:db/valueType :db.type/ref
+                               :db/cardinality :db.cardinality/many}
+                :child/uuid {:db/unique :db.unique/identity}}
+        *save (ds/create-conn schema)
+        *db (ds/create-conn schema)
         check! (fn [[lr a v]]
-                 (is (= v (get (ds/pull @*db [a] lr) a))))
+                 (let [correct-v v
+                       actual-v (get (ds/pull @*db [a] lr) a)]
+                   (when-not (= correct-v actual-v)
+                     (print (pr-str [lr a v]))
+                     (is (= correct-v actual-v)))))
         check-all! (fn [tests] (doall (map check! tests)))]
     (transact! *db [{:parent/uuid "p1"} {:parent/uuid "p2"}])
 
@@ -204,7 +209,6 @@
     (transact! *db [[:sy/new-item-in-parented-series
                      [:parent/uuid "p2"] :parent/child :child/uuid :i
                      {:child/uuid "b3" :child/data "b3"}]])
-
     (check-all! [[[:parent/uuid "p1"] :db/id 1]
                  [[:parent/uuid "p2"] :db/id 2]
                  [[:child/uuid "a1"] :i 0]
@@ -213,9 +217,68 @@
                  [[:child/uuid "b1"] :i 0]
                  [[:child/uuid "b2"] :i 1]
                  [[:child/uuid "b3"] :i 2]])
+    (ds/reset-conn! *save (ds/db *db))
+    ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
+
     (transact! *db [[:sy/migrate-item-across-parented-series
                      [:parent/uuid "p1"] [:parent/uuid "p2"] :parent/child
                      :child/uuid :i "a1" 0]])
+    (check-all! [[[:parent/uuid "p1"] :db/id 1]
+                 [[:parent/uuid "p2"] :db/id 2]
 
-    (doall (map #(prn %) (ds/datoms @*db :eavt)))
+                 [[:child/uuid "a2"] :i 0]
+                 [[:child/uuid "a3"] :i 1]
+
+                 [[:child/uuid "a1"] :i 0]
+                 [[:child/uuid "b1"] :i 1]
+                 [[:child/uuid "b2"] :i 2]
+                 [[:child/uuid "b3"] :i 3]])
+    (ds/reset-conn! *db (ds/db *save))
+
+    (transact! *db [[:sy/migrate-item-across-parented-series
+                     [:parent/uuid "p1"] [:parent/uuid "p2"] :parent/child
+                     :child/uuid :i "a1" 1]])
+    (check-all! [[[:parent/uuid "p1"] :db/id 1]
+                 [[:parent/uuid "p2"] :db/id 2]
+
+                 [[:child/uuid "a2"] :i 0]
+                 [[:child/uuid "a3"] :i 1]
+
+                 [[:child/uuid "b1"] :i 0]
+                 [[:child/uuid "a1"] :i 1]
+                 [[:child/uuid "b2"] :i 2]
+                 [[:child/uuid "b3"] :i 3]])
+    (ds/reset-conn! *db (ds/db *save))
+
+    (transact! *db [[:sy/migrate-item-across-parented-series
+                     [:parent/uuid "p1"] [:parent/uuid "p2"] :parent/child
+                     :child/uuid :i "a1" 2]])
+    (check-all! [[[:parent/uuid "p1"] :db/id 1]
+                 [[:parent/uuid "p2"] :db/id 2]
+
+                 [[:child/uuid "a2"] :i 0]
+                 [[:child/uuid "a3"] :i 1]
+
+                 [[:child/uuid "b1"] :i 0]
+                 [[:child/uuid "b2"] :i 1]
+                 [[:child/uuid "a1"] :i 2]
+                 [[:child/uuid "b3"] :i 3]])
+    (ds/reset-conn! *db (ds/db *save))
+
+    (transact! *db [[:sy/migrate-item-across-parented-series
+                     [:parent/uuid "p1"] [:parent/uuid "p2"] :parent/child
+                     :child/uuid :i "a1" 3]])
+    (check-all! [[[:parent/uuid "p1"] :db/id 1]
+                 [[:parent/uuid "p2"] :db/id 2]
+
+                 [[:child/uuid "a2"] :i 0]
+                 [[:child/uuid "a3"] :i 1]
+
+                 [[:child/uuid "b1"] :i 0]
+                 [[:child/uuid "b2"] :i 1]
+                 [[:child/uuid "b3"] :i 2]
+                 [[:child/uuid "a1"] :i 3]])
+    ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
+    (ds/reset-conn! *db (ds/db *save))
+
     nil))

@@ -135,6 +135,47 @@
                (setval [old-index] NONE)
                (map-indexed (fn [i id*] [:db/add [id-attr id*] index-attr i]))
                (into [[:db.fn/retractEntity [id-attr id]]])))))))
+
+(defn migrate-item-across-parented-series
+  [db [_op src-parent-lookup-ref dst-parent-lookup-ref parent-child-attr
+       id-attr index-attr id new-index]]
+  (let [[src-id-attr src-id-value] src-parent-lookup-ref
+        src-series (->> (get-parented-series db src-id-attr src-id-value parent-child-attr
+                                             id-attr index-attr)
+                        (sort-by second))
+        [dst-id-attr dst-id-value] dst-parent-lookup-ref
+        dst-series (->> (get-parented-series db dst-id-attr dst-id-value parent-child-attr
+                                             id-attr index-attr)
+                        (sort-by second))]
+    (if (= 0 (count src-series))
+      []
+      (let [old-index (some (fn [[id* i]] (if (= id id*) i nil))
+                            src-series)]
+        (if (not old-index)
+          []
+          (let [tx-data [[:db/retract
+                          src-parent-lookup-ref parent-child-attr [id-attr id]]
+                         [:db/add
+                          dst-parent-lookup-ref parent-child-attr [id-attr id]]]
+                ;; new src series indexes
+                tx-data
+                (into
+                 tx-data
+                 (->> (map first src-series)
+                      (setval [old-index] NONE)
+                      (map-indexed (fn [i id*] [:db/add [id-attr id*] index-attr i]))))
+
+                ;; new dst series indexes
+                new-index (min (dec (count dst-series)) new-index)
+                tx-data
+                (into
+                 tx-data
+                 (->> (map first dst-series)
+                      (setval [(srange new-index new-index)] [id])
+                      (map-indexed (fn [i id*] [:db/add [id-attr id*] index-attr i]))))]
+            (prn tx-data)
+            tx-data))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn eval-tx [db tx]
@@ -152,6 +193,7 @@
        :sy/new-item-in-parented-series (new-item-in-parented-series db tx)
        :sy/reorder-item-in-parented-series (reorder-item-in-parented-series db tx)
        :sy/delete-item-in-parented-series (delete-item-in-parented-series db tx)
+       :sy/migrate-item-across-parented-series (migrate-item-across-parented-series db tx)
 
        [tx]))
    :else [tx]))

@@ -166,14 +166,14 @@
                       (map-indexed (fn [i id*] [:db/add [id-attr id*] index-attr i]))))
 
                 ;; new dst series indexes
-                new-index (min (dec (count dst-series)) new-index)
+                new-index (min (count dst-series) new-index)
                 tx-data
                 (into
                  tx-data
                  (->> (map first dst-series)
                       (setval [(srange new-index new-index)] [id])
                       (map-indexed (fn [i id*] [:db/add [id-attr id*] index-attr i]))))]
-            (prn tx-data)
+            ; (prn tx-data)
             tx-data))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

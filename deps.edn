@@ -19,5 +19,5 @@
         olical/depot {:mvn/version "2.1.0"}}
 
  :aliases
- {:sy-datascript {:extra-deps {thheller/shadow-cljs {:mvn/version "2.11.11"}}}
+ {:sy-datascript {:extra-deps {thheller/shadow-cljs {:mvn/version "2.11.13"}}}
   :outdated {:main-opts ["-m" "depot.outdated.main"]}}}

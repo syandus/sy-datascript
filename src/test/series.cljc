@@ -76,6 +76,27 @@
 
     nil))
 
+(deftest reorder-eof-item-test
+  (let [*conn (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*conn [k] e)
+                       k))]
+    ; (print "reorder-eof-item-test")
+    (transact! *conn [{:uuid "a" :i 0} {:uuid "b" :i 1} {:uuid "c" :i 2} {:uuid "d" :i 3}])
+    (is (= 0 (get-attr :i [:uuid "a"])))
+    (is (= 1 (get-attr :i [:uuid "b"])))
+    (is (= 2 (get-attr :i [:uuid "c"])))
+    (is (= 3 (get-attr :i [:uuid "d"])))
+
+    (transact! *conn [[:sy/reorder-item-in-series :uuid :i "a" 4]])
+
+    (is (= 0 (get-attr :i [:uuid "b"])))
+    (is (= 1 (get-attr :i [:uuid "c"])))
+    (is (= 2 (get-attr :i [:uuid "d"])))
+    (is (= 3 (get-attr :i [:uuid "a"])))
+
+    nil))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest new-item-0-test

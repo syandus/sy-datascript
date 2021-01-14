@@ -171,5 +171,51 @@
                 [[:child/uuid "c2"] :i 0]
                 [[:child/uuid "ch1"] :i 0]])
 
-    (doall (map #(prn %) (ds/datoms @*conn :eavt)))
+    ; (doall (map #(prn %) (ds/datoms @*conn :eavt)))
+    nil))
+
+(deftest migrate-item-across-parented-series-test
+  (let [*db (ds/create-conn
+             {:parent/uuid {:db/unique :db.unique/identity}
+              :parent/child {:db/valueType :db.type/ref
+                             :db/cardinality :db.cardinality/many}
+              :child/uuid {:db/unique :db.unique/identity}})
+        check! (fn [[lr a v]]
+                (is (= v (get (ds/pull @*db [a] lr) a))))
+        check-all! (fn [tests] (doall (map check! tests)))]
+    (transact! *db [{:parent/uuid "p1"} {:parent/uuid "p2"}])
+
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "p1"] :parent/child :child/uuid :i
+                     {:child/uuid "a1" :child/data "a1"}]])
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "p1"] :parent/child :child/uuid :i
+                     {:child/uuid "a2" :child/data "a1"}]])
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "p1"] :parent/child :child/uuid :i
+                     {:child/uuid "a3" :child/data "a3"}]])
+
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "p2"] :parent/child :child/uuid :i
+                     {:child/uuid "b1" :child/data "b1"}]])
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "p2"] :parent/child :child/uuid :i
+                     {:child/uuid "b2" :child/data "b1"}]])
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "p2"] :parent/child :child/uuid :i
+                     {:child/uuid "b3" :child/data "b3"}]])
+
+    (check-all! [[[:parent/uuid "p1"] :db/id 1]
+                 [[:parent/uuid "p2"] :db/id 2]
+                 [[:child/uuid "a1"] :i 0]
+                 [[:child/uuid "a2"] :i 1]
+                 [[:child/uuid "a3"] :i 2]
+                 [[:child/uuid "b1"] :i 0]
+                 [[:child/uuid "b2"] :i 1]
+                 [[:child/uuid "b3"] :i 2]])
+    (transact! *db [[:sy/migrate-item-across-parented-series
+                     [:parent/uuid "p1"] [:parent/uuid "p2"] :parent/child
+                     :child/uuid :i "a1" 0]])
+
+    (doall (map #(prn %) (ds/datoms @*db :eavt)))
     nil))

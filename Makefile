@@ -17,3 +17,6 @@ watch:
 	rm -f sy-datascript.js
 	rm -f sy-datascript.js.map
 	./node_modules/.bin/shadow-cljs watch sy-datascript
+
+repl:
+	node ./sy-datascript.js

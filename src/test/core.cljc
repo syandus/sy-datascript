@@ -9,30 +9,41 @@
 
 
 (deftest passthrough-test
-  (let [*conn (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+  (let [*db (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
         get-attr (fn [k e]
-                     (-> (ds/pull @*conn [k] e)
+                     (-> (ds/pull @*db [k] e)
                          k))]
-    (transact! *conn [{:uuid 1 :foo :bar}])
+    (transact! *db [{:uuid 1 :foo :bar}])
     (is (= :bar (get-attr :foo [:uuid 1])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest only-if-exists-test
-  (let [*conn (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+  (let [*db (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
         get-attr (fn [k e]
-                     (-> (ds/pull @*conn [k] e)
+                     (-> (ds/pull @*db [k] e)
                          k))]
-    (transact! *conn [{:uuid 1 :x 1}])
+    (transact! *db [{:uuid 1 :x 1}])
     (let [id 1]
-      (transact! *conn [[:sy/only-if-exists :uuid id
+      (transact! *db [[:sy/only-if-exists :uuid id
                          [:db/add [:uuid id] :y 2]]])
-      (is (= 1 (count (ds/datoms @*conn :avet :uuid id))))
+      (is (= 1 (count (ds/datoms @*db :avet :uuid id))))
       (is (= 2 (get-attr :y [:uuid id]))))
     (let [id 2]
-      (transact! *conn [[:sy/only-if-exists :uuid id
+      (transact! *db [[:sy/only-if-exists :uuid id
                        [:db/add [:uuid id] :y 2]]])
-      (is (= 0 (count (ds/datoms @*conn :avet :uuid id)))))
+      (is (= 0 (count (ds/datoms @*db :avet :uuid id)))))
     
     nil))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(deftest add-time-in-seconds-text
+  (let [*db (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*db [k] e)
+                       k))]
+    (transact! *db [[:sy/add-time-in-seconds {:uuid "abc" :text "Hello, World!"}]])
+    ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
+    (is (number? (get-attr :t [:uuid "abc"])))
+    nil))

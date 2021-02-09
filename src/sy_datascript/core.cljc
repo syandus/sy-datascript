@@ -178,6 +178,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn add-time-in-seconds [db [_op tx]]
+  (let [t #?(:cljs (-> (js/Date.now) (/ 1000))
+             :clj (/ (System/currentTimeMillis) 1000.0))]
+    [(assoc tx :t t)]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn eval-tx [db tx]
   (cond
    (map? tx) [tx]
@@ -194,6 +201,8 @@
        :sy/reorder-item-in-parented-series (reorder-item-in-parented-series db tx)
        :sy/delete-item-in-parented-series (delete-item-in-parented-series db tx)
        :sy/migrate-item-across-parented-series (migrate-item-across-parented-series db tx)
+
+       :sy/add-time-in-seconds (add-time-in-seconds db tx)
 
        [tx]))
    :else [tx]))

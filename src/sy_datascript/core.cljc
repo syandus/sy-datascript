@@ -178,10 +178,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn add-time-in-seconds [db [_op tx]]
+(defn add-time-in-seconds [db [_op attr tx]]
   (let [t #?(:cljs (-> (js/Date.now) (/ 1000))
              :clj (/ (System/currentTimeMillis) 1000.0))]
-    [(assoc tx :t t)]))
+    [(assoc tx attr t)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

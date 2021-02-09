@@ -43,7 +43,8 @@
         get-attr (fn [k e]
                    (-> (ds/pull @*db [k] e)
                        k))]
-    (transact! *db [[:sy/add-time-in-seconds {:uuid "abc" :text "Hello, World!"}]])
+    (transact! *db [[:sy/add-time-in-seconds :t
+                     {:uuid "abc" :text "Hello, World!"}]])
     ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
     (is (number? (get-attr :t [:uuid "abc"])))
     nil))

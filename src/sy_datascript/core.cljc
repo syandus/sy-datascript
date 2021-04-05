@@ -185,6 +185,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn compare-and-swap [db [_op
+                            entity-ref cas-attribute value
+                            tx]]
+  (let [x (-> (ds/pull db [cas-attribute] entity-ref)
+              (get cas-attribute)
+              (or 0))]
+    (if (= x value)
+      [[:db/add entity-ref cas-attribute (inc x)]
+       tx]
+      [])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn eval-tx [db tx]
   (cond
    (map? tx) [tx]
@@ -192,6 +205,7 @@
    (let [[op] tx]
      (case op
        :sy/only-if-exists (only-if-exists db tx)
+       :sy/compare-and-swap (compare-and-swap db tx)
 
        :sy/new-item-in-series (new-item-in-series db tx)
        :sy/reorder-item-in-series (reorder-item-in-series db tx)

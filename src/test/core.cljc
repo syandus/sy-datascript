@@ -38,7 +38,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(deftest add-time-in-seconds-text
+(deftest add-time-in-seconds-test
   (let [*db (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
         get-attr (fn [k e]
                    (-> (ds/pull @*db [k] e)
@@ -47,4 +47,34 @@
                      {:uuid "abc" :text "Hello, World!"}]])
     ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
     (is (number? (get-attr :t [:uuid "abc"])))
+    nil))
+
+(deftest compare-and-swap-test
+  (let [*db (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*db [k] e)
+                       k))
+        e [:uuid "foo"]]
+    (transact! *db [{:uuid "foo" :x "foo"}])
+
+    (is (= "foo" (get-attr :x e)))
+    (is (= nil (get-attr :cas e)))
+
+    (transact! *db [[:sy/compare-and-swap e :cas 0
+                     [:db/add e :x "bar"]]])
+    (is (= "bar" (get-attr :x e)))
+    (is (= 1 (get-attr :cas e)))
+
+    ;; ignored tx
+    (transact! *db [[:sy/compare-and-swap e :cas 0
+                     [:db/add e :x "fizz"]]])
+    (is (= "bar" (get-attr :x e)))
+    (is (= 1 (get-attr :cas e)))
+
+    (transact! *db [[:sy/compare-and-swap e :cas 1
+                     [:db/add e :x "buzz"]]])
+    (is (= "buzz" (get-attr :x e)))
+    (is (= 2 (get-attr :cas e)))
+    
+    
     nil))

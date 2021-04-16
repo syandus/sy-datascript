@@ -187,13 +187,13 @@
 
 (defn compare-and-swap [db [_op
                             entity-ref cas-attribute value
-                            tx]]
+                            & txs]]
   (let [x (-> (ds/pull db [cas-attribute] entity-ref)
               (get cas-attribute)
               (or 0))]
     (if (= x value)
-      [[:db/add entity-ref cas-attribute (inc x)]
-       tx]
+      (into [[:db/add entity-ref cas-attribute (inc x)]]
+            txs)
       [])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

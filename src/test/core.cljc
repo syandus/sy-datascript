@@ -76,5 +76,11 @@
     (is (= "buzz" (get-attr :x e)))
     (is (= 2 (get-attr :cas e)))
     
-    
+    (transact! *db [[:sy/compare-and-swap e :cas 2
+                     [:db/add e :cat "cat"]
+                     [:db/add e :dog "dog"]]])
+    (is (= 3 (get-attr :cas e)))
+    (is (= "cat" (get-attr :cat e)))
+    (is (= "dog" (get-attr :dog e)))
+
     nil))

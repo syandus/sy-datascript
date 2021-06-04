@@ -4,7 +4,6 @@
       :clj  [clojure.test :as t :refer        [is are deftest testing]])
    [com.rpl.specter :as sp :refer [setval srange ALL NONE]]
    [datascript.core :as ds]
-   [posh.reagent :as posh]
    [clojure.string :as str]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

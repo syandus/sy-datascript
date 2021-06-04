@@ -7,11 +7,6 @@
     "node": ">=12.0.0"
   },
   "dependencies": {
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "semver": "7.3.5",
-    "source-map-support": "0.5.19",
-    "trace": "3.1.1"
   },
   "devDependencies": {
     "shadow-cljs": "2.12.1"

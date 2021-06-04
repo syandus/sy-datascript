@@ -9,9 +9,9 @@ update-node-deep-deps:
 	npm install
 
 outdated:
-	clojure -Aoutdated --aliases outdated --aliases sy-datascript
+	clojure -Msy-datascript:outdated --every
 update-cljs:
-	clojure -Aoutdated --aliases outdated --aliases sy-datascript --write
+	clojure -Msy-datascript:outdated --every --write
 
 watch:
 	rm -f sy-datascript.js

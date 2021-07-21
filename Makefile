@@ -3,15 +3,13 @@ name := sy-datascript
 
 .PHONY: all
 
-update-node-deep-deps:
+upgrade-node-deep-deps:
 	rm -rf node_modules
 	rm -f package-lock.json
 	npm install
 
-outdated:
-	clojure -Msy-datascript:outdated --every
-update-cljs:
-	clojure -Msy-datascript:outdated --every --write
+upgrade-cljs-deps:
+	clojure -M:outdated --upgrade
 
 watch:
 	rm -f sy-datascript.js

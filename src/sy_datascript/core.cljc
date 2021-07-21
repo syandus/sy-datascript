@@ -222,14 +222,40 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def ops #{:sy/only-if-exists 
+           :sy/compare-and-swap 
+
+           :sy/new-item-in-series 
+           :sy/reorder-item-in-series 
+           :sy/delete-item-in-series 
+
+           :sy/new-item-in-parented-series 
+           :sy/reorder-item-in-parented-series 
+           :sy/delete-item-in-parented-series 
+           :sy/migrate-item-across-parented-series 
+
+           :sy/add-time-in-seconds})
+
+(defn sy-op? [tx]
+  (cond
+   (map? tx) false
+   (vector? tx) (let [[op] tx]
+                  (contains? ops op))))
+
+(defn eval-ops-loop [db input-tx-data]
+  (-> (loop [tx-data input-tx-data]
+        (if (some sy-op? tx-data)
+          (recur (->> (map (partial eval-tx db) tx-data)
+                      (mapcat identity)))
+          tx-data))
+      (vec)))
+
 (defn with
   "Similar to datascript `with`, but supports Syandus extensions to the
   language."
   ([db tx-data] (with db tx-data nil))
   ([db tx-data tx-meta]
-   (let [tx-data (->> (mapv (partial eval-tx db) tx-data)
-                      (mapcat identity)
-                      (vec))]
+   (let [tx-data (eval-ops-loop db tx-data)]
      (ds/with db tx-data tx-meta))))
 
 (defn sy-transact!
@@ -239,9 +265,7 @@
   ([transact-fn *conn tx-data tx-meta]
    (assert (vector? tx-data) "`tx-data` must be a vector!")
    (let [db @*conn
-         tx-data (->> (mapv (partial eval-tx db) tx-data)
-                      (mapcat identity)
-                      (vec))]
+         tx-data (eval-ops-loop db tx-data)]
      (transact-fn *conn tx-data tx-meta))))
 
 (def transact! "[conn tx-data tx-meta]"

@@ -84,3 +84,31 @@
     (is (= "dog" (get-attr :dog e)))
 
     nil))
+
+(deftest cas-recursive-test
+  (let [*db (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*db [k] e)
+                       k))
+        e [:uuid "foo"]]
+    (transact! *db [{:uuid "foo" :x "foo"}])
+    (is (= "foo" (get-attr :x e)))
+
+    (transact! *db [[:sy/compare-and-swap [:uuid "foo"] :cas 0
+                     [:sy/add-time-in-seconds :t
+                      {:uuid "bar" :text "Hello, World!"}]]])
+
+    (is (= 1 (get-attr :cas [:uuid "foo"])))
+    (is (= "Hello, World!" (get-attr :text [:uuid "bar"])))
+    (is (number? (get-attr :t [:uuid "bar"])))
+
+    (transact! *db [[:sy/compare-and-swap [:uuid "foo"] :cas 0
+                     [:sy/add-time-in-seconds :t
+                      {:uuid "bar" :text "NOP"}]]])
+    (is (= "Hello, World!" (get-attr :text [:uuid "bar"])))
+
+    (transact! *db [[:sy/compare-and-swap [:uuid "foo"] :cas 1
+                     [:db/add [:uuid "bar"] :y 42]]])
+    (is (= 42 (get-attr :y [:uuid "bar"])))
+
+    nil))

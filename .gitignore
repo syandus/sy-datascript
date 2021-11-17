@@ -6,3 +6,7 @@
 
 # output
 /sy-datascript.js
+
+# LSP
+.cache
+/.clj-kondo/rewrite-clj/

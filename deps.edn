@@ -5,18 +5,18 @@
 
  :deps {;; official clojure
         org.clojure/clojure {:mvn/version "1.10.3"}
-        org.clojure/clojurescript {:mvn/version "1.10.879"}
+        org.clojure/clojurescript {:mvn/version "1.10.893"}
 
         ;; swiss army / utils
         com.rpl/specter {:mvn/version "1.1.3"}
 
         ;; DB
-        datascript/datascript {:mvn/version "1.2.2"}}
+        datascript/datascript {:mvn/version "1.2.10"}}
 
  :aliases
- {:sy-datascript {:extra-deps {thheller/shadow-cljs {:mvn/version "2.15.2"}
-                               org.slf4j/slf4j-simple {:mvn/version "1.7.31"}
+ {:sy-datascript {:extra-deps {thheller/shadow-cljs {:mvn/version "2.16.4"}
+                               org.slf4j/slf4j-simple {:mvn/version "1.7.32"}
                                cljfmt/cljfmt {:mvn/version "0.8.0"}
-                               rewrite-clj/rewrite-clj {:mvn/version "1.0.644-alpha"}}}
+                               rewrite-clj/rewrite-clj {:mvn/version "1.0.699-alpha"}}}
   :outdated {:extra-deps {com.github.liquidz/antq {:mvn/version "RELEASE"}}
              :main-opts ["-m" "antq.core"]}}}

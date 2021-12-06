@@ -9,7 +9,7 @@ upgrade-node-deep-deps:
 	npm install
 
 upgrade-cljs-deps:
-	clojure -M:outdated --upgrade
+	clojure -M:sy-datascript:outdated --upgrade
 
 watch:
 	rm -f sy-datascript.js

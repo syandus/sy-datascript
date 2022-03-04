@@ -1,7 +1,6 @@
 (ns test.parented-series
   (:require
-   #?(:cljs [cljs.test    :as t :refer-macros [is are deftest testing]]
-      :clj  [clojure.test :as t :refer        [is are deftest testing]])
+   [clojure.test :as t :refer [is are deftest testing]]
    [com.rpl.specter :as sp :refer [setval srange ALL NONE]]
    [datascript.core :as ds]
    [clojure.string :as str]

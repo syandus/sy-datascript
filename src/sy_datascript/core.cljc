@@ -177,9 +177,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def ^:dynamic *unix-timestamp* nil)
+
 (defn add-time-in-seconds [db [_op attr tx]]
-  (let [t #?(:cljs (-> (js/Date.now) (/ 1000))
-             :clj (/ (System/currentTimeMillis) 1000.0))]
+  (let [t (if-not (nil? *unix-timestamp*)
+            *unix-timestamp*
+            #?(:cljs (-> (js/Date.now) (/ 1000))
+               :clj (/ (System/currentTimeMillis) 1000.0))) ]
     [(assoc tx attr t)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -3,6 +3,7 @@
 /node_modules
 /.shadow-cljs
 /cljs-runtime
+/.nrepl-port
 
 # output
 /sy-datascript.js

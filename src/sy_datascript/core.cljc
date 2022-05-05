@@ -46,7 +46,7 @@
             (->> (map second series)
                  (reduce max)
                  (inc)))]
-    [(assoc tx :i n)]))
+    [(assoc tx index-attr n)]))
 
 (defn new-item-in-parented-series
   [db [_op parent-lookup-ref parent-child-attr id-attr index-attr tx]]
@@ -58,7 +58,7 @@
             (->> (map second series)
                  (reduce max)
                  (inc)))]
-    [(assoc tx :i n)
+    [(assoc tx index-attr n)
      [:db/add parent-lookup-ref parent-child-attr [id-attr (get tx id-attr)]]]))
 
 (defn reorder-item-in-series [db [_op id-attr index-attr id new-index]]

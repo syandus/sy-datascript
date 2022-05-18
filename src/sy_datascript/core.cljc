@@ -2,6 +2,7 @@
   (:require
    #?(:cljs [cljs.test    :as t :refer-macros [is are deftest testing]]
       :clj  [clojure.test :as t :refer        [is are deftest testing]])
+   [clojure.math :refer [floor]]
    [com.rpl.specter :as sp :refer [setval srange ALL NONE]]
    [datascript.core :as ds]
    [clojure.string :as str]))
@@ -182,8 +183,9 @@
 (defn add-time-in-seconds [db [_op attr tx]]
   (let [t (if-not (nil? *unix-timestamp*)
             *unix-timestamp*
-            #?(:cljs (-> (js/Date.now) (/ 1000))
-               :clj (/ (System/currentTimeMillis) 1000.0))) ]
+            (-> #?(:cljs (js/Date.now) :clj (System/currentTimeMillis))
+                (/ 1000)
+                (floor)))]
     [(assoc tx attr t)]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

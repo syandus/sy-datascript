@@ -110,4 +110,6 @@
                      [:db/add [:uuid "bar"] :y 42]]])
     (is (= 42 (get-attr :y [:uuid "bar"])))
 
+    ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
+
     nil))

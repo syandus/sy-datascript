@@ -243,9 +243,9 @@
 
 (defn sy-op? [tx]
   (cond
-   (map? tx) false
-   (vector? tx) (let [[op] tx]
-                  (contains? ops op))))
+    (map? tx) false
+    (vector? tx) (let [[op] tx]
+                   (contains? ops op))))
 
 (defn eval-ops-loop [db input-tx-data]
   (-> (loop [tx-data input-tx-data]

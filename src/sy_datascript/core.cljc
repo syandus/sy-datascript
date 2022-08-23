@@ -69,7 +69,7 @@
                             [?e ?index-attr ?i]]
                           db id-attr index-attr)
                     (sort-by second))]
-    (if (or (= 0 (count series)))
+    (if (= 0 (count series))
       []
       (let [new-index (min (dec (count series)) new-index)
             old-index (some (fn [[id* i]] (if (= id id*) i nil))
@@ -87,7 +87,7 @@
         series (->> (get-parented-series db parent-id-attr parent-id-value
                                          parent-child-attr id-attr index-attr)
                     (sort-by second))]
-    (if (or (= 0 (count series)))
+    (if (= 0 (count series))
       []
       (let [new-index (min (dec (count series)) new-index)
             old-index (some (fn [[id* i]] (if (= id id*) i nil))
@@ -124,7 +124,7 @@
         series (->> (get-parented-series db parent-id-attr parent-id-value
                                          parent-child-attr id-attr index-attr)
                     (sort-by second))]
-    (if (or (= 0 (count series)))
+    (if (= 0 (count series))
       []
       (let [old-index (some (fn [[id* i]] (if (= id id*) i nil))
                             series)]

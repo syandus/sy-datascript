@@ -15,8 +15,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn get-parented-series [db parent-id-attr parent-id-value parent-child-attr
-                           id-attr index-attr]
+(defn get-parented-series
+  "Returns a seq of [\"UUID string\" index-number]"
+  [db parent-id-attr parent-id-value parent-child-attr
+   id-attr index-attr]
   (ds/q '[:find ?item-uuid ?i
           :in $
           ?parent-id-attr ?parent-id-value

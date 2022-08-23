@@ -1,11 +1,8 @@
 (ns sy-datascript.core
   (:require
-   #?(:cljs [cljs.test    :as t :refer-macros [is are deftest testing]]
-      :clj  [clojure.test :as t :refer        [is are deftest testing]])
    [clojure.math :refer [floor]]
    [com.rpl.specter :as sp :refer [setval srange ALL NONE]]
-   [datascript.core :as ds]
-   [clojure.string :as str]))
+   [datascript.core :as ds]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

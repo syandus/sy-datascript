@@ -341,3 +341,89 @@
                  [[:parent/uuid "p2"] :parent/child [{:db/id 6} {:db/id 8}]]])
 
     nil))
+
+(deftest insert-item-in-parented-series-test
+  (let [*db (ds/create-conn {:parent/uuid {:db/unique :db.unique/identity}
+                             :parent/child {:db/valueType :db.type/ref
+                                            :db/cardinality :db.cardinality/many}
+                             :child/uuid {:db/unique :db.unique/identity}})
+        check! (fn [[lr a v]]
+                 (is (= v (-> (ds/pull @*db [a] lr)
+                              (get a)))
+                     (pr-str lr a v)))
+        check-all! (fn [tests]
+                     (doall (map check! tests)))]
+
+    (transact! *db [{:parent/uuid "p1"}
+                    {:parent/uuid "p2"}
+                    {:parent/uuid "p3"}
+                    {:parent/uuid "p-empty"}
+                    {:parent/uuid "p-empty2"}])
+
+    (letfn [(add! [parent-id child-id]
+              (transact! *db [[:sy/new-item-in-parented-series
+                               [:parent/uuid parent-id] :parent/child
+                               :child/uuid :i
+                               {:child/uuid child-id :child/data :foo}]]))]
+      (add! "p1" "c1")
+      (add! "p1" "c2")
+      (add! "p1" "c3")
+
+      (add! "p2" "ch1")
+      (add! "p2" "ch2")
+      (add! "p2" "ch3")
+      
+      )
+
+    (check-all! [[[:parent/uuid "p1"] :db/id 1]
+                 [[:parent/uuid "p2"] :db/id 2]
+                 [[:child/uuid "c1"] :i 0]
+                 [[:child/uuid "c2"] :i 1]
+                 [[:child/uuid "c3"] :i 2]
+                 [[:child/uuid "ch1"] :i 0]
+                 [[:child/uuid "ch2"] :i 1]
+                 [[:child/uuid "ch3"] :i 2]])
+
+    (transact! *db [{:child/uuid "c-empty"}])
+    (transact! *db [[:sy/insert-item-in-parented-series
+                     [:parent/uuid "p-empty"] :parent/child
+                     :child/uuid :j
+                     "c-empty" 0]])
+
+    (transact! *db [{:child/uuid "c-empty2"}])
+    (transact! *db [[:sy/insert-item-in-parented-series
+                     [:parent/uuid "p-empty"] :parent/child
+                     :child/uuid :j
+                     "c-empty2" 100]])
+
+    (check-all! [[[:child/uuid "c-empty"] :j 0]
+                 [[:child/uuid "c-empty2"] :j 0]])
+
+    ;;;;;;;;;;;;;;;;;;;;
+
+    (transact! *db [{:child/uuid "ca"}])
+    (transact! *db [[:sy/insert-item-in-parented-series
+                     [:parent/uuid "p1"] :parent/child
+                     :child/uuid :i
+                     "ca" 0]])
+
+    (check-all! [[[:child/uuid "ca"] :i 0]
+                 [[:child/uuid "c1"] :i 1]
+                 [[:child/uuid "c2"] :i 2]
+                 [[:child/uuid "c3"] :i 3]])
+
+    ;;;;;;;;;;;;;;;;;;;;
+
+    (transact! *db [{:child/uuid "cha"}])
+    (transact! *db [[:sy/insert-item-in-parented-series
+                     [:parent/uuid "p2"] :parent/child
+                     :child/uuid :i
+                     "cha" 3]])
+
+    (check-all! [[[:child/uuid "ch1"] :i 0]
+                 [[:child/uuid "ch2"] :i 1]
+                 [[:child/uuid "ch3"] :i 2]
+                 [[:child/uuid "cha"] :i 3]])
+
+    ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
+    nil))

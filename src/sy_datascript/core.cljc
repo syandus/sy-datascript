@@ -1,7 +1,7 @@
 (ns sy-datascript.core
   (:require
    [clojure.math :refer [floor]]
-   [com.rpl.specter :as sp :refer [setval srange ALL NONE]]
+   [com.rpl.specter :as sp :refer [setval srange before-index ALL NONE]]
    [datascript.core :as ds]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -178,7 +178,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn insert-item-in-parented-series
-  [db []])
+  [db [_op
+       parent-lookup-ref parent-child-attr
+       child-id-attr index-attr
+       new-child-id idx]]
+  (let [[parent-id-attr parent-id-value] parent-lookup-ref
+        series (->> (get-parented-series db parent-id-attr parent-id-value
+                                         parent-child-attr child-id-attr index-attr)
+                    (sort-by second))
+        curr-n (count series)
+        idx (max 0 idx)
+        idx (min curr-n idx)]
+    (->> (map first series)
+         (setval [(before-index idx)] new-child-id)
+         (map-indexed (fn [i child-id] [:db/add [child-id-attr child-id] index-attr i])))))
 
 (defn remove-item-in-parented-series
   [db [_op parent-lookup-ref parent-child-attr id-attr index-attr id]]
@@ -203,7 +216,7 @@
 
 (def ^:dynamic *unix-timestamp* nil)
 
-(defn add-time-in-seconds [db [_op attr tx]]
+(defn add-time-in-seconds [_db [_op attr tx]]
   (let [t (if-not (nil? *unix-timestamp*)
             *unix-timestamp*
             (-> #?(:cljs (js/Date.now) :clj (System/currentTimeMillis))

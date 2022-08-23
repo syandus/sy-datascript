@@ -105,7 +105,7 @@
                             [?e ?index-attr ?i]]
                           db id-attr index-attr)
                     (sort-by second))]
-    (if (or (= 0 (count series)))
+    (if (= 0 (count series))
       []
       (let [old-index (some (fn [[id* i]] (if (= id id*) i nil))
                             series)]

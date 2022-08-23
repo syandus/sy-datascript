@@ -177,6 +177,30 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn insert-item-in-parented-series
+  [db []])
+
+(defn remove-item-in-parented-series
+  [db [_op parent-lookup-ref parent-child-attr id-attr index-attr id]]
+  (let [[parent-id-attr parent-id-value] parent-lookup-ref
+        series (->> (get-parented-series db parent-id-attr parent-id-value
+                                         parent-child-attr id-attr index-attr)
+                    (sort-by second))]
+    (if (= 0 (count series))
+      []
+      (let [old-index (some (fn [[id* i]] (if (= id id*) i nil))
+                            series)
+            child-ref [id-attr id]]
+        (if (not old-index)
+          []
+          (->> (map first series)
+               (setval [old-index] NONE)
+               (map-indexed (fn [i id*] [:db/add [id-attr id*] index-attr i]))
+               (into [[:db.fn/retractAttribute child-ref index-attr]
+                      [:db/retract parent-lookup-ref parent-child-attr child-ref]])))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (def ^:dynamic *unix-timestamp* nil)
 
 (defn add-time-in-seconds [db [_op attr tx]]
@@ -204,40 +228,46 @@
 
 (defn eval-tx [db tx]
   (cond
-   (map? tx) [tx]
-   (vector? tx)
-   (let [[op] tx]
-     (case op
-       :sy/only-if-exists (only-if-exists db tx)
-       :sy/compare-and-swap (compare-and-swap db tx)
+    (map? tx) [tx]
+    (vector? tx)
+    (let [[op] tx]
+      (case op
+        :sy/only-if-exists (only-if-exists db tx)
+        :sy/compare-and-swap (compare-and-swap db tx)
 
-       :sy/new-item-in-series (new-item-in-series db tx)
-       :sy/reorder-item-in-series (reorder-item-in-series db tx)
-       :sy/delete-item-in-series (delete-item-in-series db tx)
+        :sy/new-item-in-series (new-item-in-series db tx)
+        :sy/reorder-item-in-series (reorder-item-in-series db tx)
+        :sy/delete-item-in-series (delete-item-in-series db tx)
 
-       :sy/new-item-in-parented-series (new-item-in-parented-series db tx)
-       :sy/reorder-item-in-parented-series (reorder-item-in-parented-series db tx)
-       :sy/delete-item-in-parented-series (delete-item-in-parented-series db tx)
-       :sy/migrate-item-across-parented-series (migrate-item-across-parented-series db tx)
+        :sy/new-item-in-parented-series (new-item-in-parented-series db tx)
+        :sy/reorder-item-in-parented-series (reorder-item-in-parented-series db tx)
+        :sy/delete-item-in-parented-series (delete-item-in-parented-series db tx)
+        :sy/migrate-item-across-parented-series (migrate-item-across-parented-series db tx)
 
-       :sy/add-time-in-seconds (add-time-in-seconds db tx)
+        :sy/insert-item-in-parented-series (insert-item-in-parented-series db tx)
+        :sy/remove-item-in-parented-series (remove-item-in-parented-series db tx)
 
-       [tx]))
-   :else [tx]))
+        :sy/add-time-in-seconds (add-time-in-seconds db tx)
+
+        [tx]))
+    :else [tx]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ops #{:sy/only-if-exists 
-           :sy/compare-and-swap 
+(def ops #{:sy/only-if-exists
+           :sy/compare-and-swap
 
-           :sy/new-item-in-series 
-           :sy/reorder-item-in-series 
-           :sy/delete-item-in-series 
+           :sy/new-item-in-series
+           :sy/reorder-item-in-series
+           :sy/delete-item-in-series
 
-           :sy/new-item-in-parented-series 
-           :sy/reorder-item-in-parented-series 
-           :sy/delete-item-in-parented-series 
-           :sy/migrate-item-across-parented-series 
+           :sy/new-item-in-parented-series
+           :sy/reorder-item-in-parented-series
+           :sy/delete-item-in-parented-series
+           :sy/migrate-item-across-parented-series
+
+           :sy/insert-item-in-parented-series
+           :sy/remove-item-in-parented-series
 
            :sy/add-time-in-seconds})
 

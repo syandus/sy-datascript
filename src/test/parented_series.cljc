@@ -342,7 +342,7 @@
 
     nil))
 
-(deftest insert-item-in-parented-series-test
+(deftest insert-item-into-parented-series-test
   (let [*db (ds/create-conn {:parent/uuid {:db/unique :db.unique/identity}
                              :parent/child {:db/valueType :db.type/ref
                                             :db/cardinality :db.cardinality/many}
@@ -371,9 +371,7 @@
 
       (add! "p2" "ch1")
       (add! "p2" "ch2")
-      (add! "p2" "ch3")
-      
-      )
+      (add! "p2" "ch3"))
 
     (check-all! [[[:parent/uuid "p1"] :db/id 1]
                  [[:parent/uuid "p2"] :db/id 2]
@@ -385,13 +383,13 @@
                  [[:child/uuid "ch3"] :i 2]])
 
     (transact! *db [{:child/uuid "c-empty"}])
-    (transact! *db [[:sy/insert-item-in-parented-series
+    (transact! *db [[:sy/insert-item-into-parented-series
                      [:parent/uuid "p-empty"] :parent/child
                      :child/uuid :j
                      "c-empty" 0]])
 
     (transact! *db [{:child/uuid "c-empty2"}])
-    (transact! *db [[:sy/insert-item-in-parented-series
+    (transact! *db [[:sy/insert-item-into-parented-series
                      [:parent/uuid "p-empty"] :parent/child
                      :child/uuid :j
                      "c-empty2" 100]])
@@ -402,7 +400,7 @@
     ;;;;;;;;;;;;;;;;;;;;
 
     (transact! *db [{:child/uuid "ca"}])
-    (transact! *db [[:sy/insert-item-in-parented-series
+    (transact! *db [[:sy/insert-item-into-parented-series
                      [:parent/uuid "p1"] :parent/child
                      :child/uuid :i
                      "ca" 0]])
@@ -415,7 +413,7 @@
     ;;;;;;;;;;;;;;;;;;;;
 
     (transact! *db [{:child/uuid "cha"}])
-    (transact! *db [[:sy/insert-item-in-parented-series
+    (transact! *db [[:sy/insert-item-into-parented-series
                      [:parent/uuid "p2"] :parent/child
                      :child/uuid :i
                      "cha" 3]])

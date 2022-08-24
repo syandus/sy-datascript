@@ -177,7 +177,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn insert-item-in-parented-series
+(defn insert-item-into-parented-series
   [db [_op
        parent-lookup-ref parent-child-attr
        child-id-attr index-attr
@@ -257,7 +257,7 @@
         :sy/delete-item-in-parented-series (delete-item-in-parented-series db tx)
         :sy/migrate-item-across-parented-series (migrate-item-across-parented-series db tx)
 
-        :sy/insert-item-in-parented-series (insert-item-in-parented-series db tx)
+        :sy/insert-item-into-parented-series (insert-item-into-parented-series db tx)
         :sy/remove-item-in-parented-series (remove-item-in-parented-series db tx)
 
         :sy/add-time-in-seconds (add-time-in-seconds db tx)
@@ -279,7 +279,7 @@
            :sy/delete-item-in-parented-series
            :sy/migrate-item-across-parented-series
 
-           :sy/insert-item-in-parented-series
+           :sy/insert-item-into-parented-series
            :sy/remove-item-in-parented-series
 
            :sy/add-time-in-seconds})

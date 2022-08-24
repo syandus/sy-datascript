@@ -348,11 +348,13 @@
                                             :db/cardinality :db.cardinality/many}
                              :child/uuid {:db/unique :db.unique/identity}})
         check! (fn [[lr a v]]
-                 (is (= v (-> (ds/pull @*db [a] lr)
+                 (is (= v (-> (ds/pull @*db '[*] lr)
                               (get a)))
                      (pr-str lr a v)))
         check-all! (fn [tests]
-                     (doall (map check! tests)))]
+                     (doall (map check! tests)))
+
+        print! (fn [] (doall (map #(prn %) (ds/datoms @*db :eavt))))]
 
     (transact! *db [{:parent/uuid "p1"}
                     {:parent/uuid "p2"}
@@ -394,8 +396,9 @@
                      :child/uuid :j
                      "c-empty2" 100]])
 
+    ; (print!)
     (check-all! [[[:child/uuid "c-empty"] :j 0]
-                 [[:child/uuid "c-empty2"] :j 0]])
+                 [[:child/uuid "c-empty2"] :j 1]])
 
     ;;;;;;;;;;;;;;;;;;;;
 
@@ -421,7 +424,11 @@
     (check-all! [[[:child/uuid "ch1"] :i 0]
                  [[:child/uuid "ch2"] :i 1]
                  [[:child/uuid "ch3"] :i 2]
-                 [[:child/uuid "cha"] :i 3]])
+                 [[:child/uuid "cha"] :i 3]
 
-    ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
+                 [[:parent/uuid "p2"] :parent/child
+                  [{:db/id 9}
+                   {:db/id 10}
+                   {:db/id 11}
+                   {:db/id 15}]]])
     nil))

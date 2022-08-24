@@ -191,7 +191,8 @@
         idx (min curr-n idx)]
     (->> (map first series)
          (setval [(before-index idx)] new-child-id)
-         (map-indexed (fn [i child-id] [:db/add [child-id-attr child-id] index-attr i])))))
+         (map-indexed (fn [i child-id] [:db/add [child-id-attr child-id] index-attr i]))
+         (into [[:db/add parent-lookup-ref parent-child-attr [child-id-attr new-child-id]]]))))
 
 (defn remove-item-in-parented-series
   [db [_op parent-lookup-ref parent-child-attr id-attr index-attr id]]

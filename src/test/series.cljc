@@ -1,9 +1,7 @@
 (ns test.series
   (:require
-   [clojure.test :as t :refer [is are deftest testing]]
-   [com.rpl.specter :as sp :refer [setval srange ALL NONE]]
+   [clojure.test :as t :refer [is deftest]]
    [datascript.core :as ds]
-   [clojure.string :as str]
    [sy-datascript.core :as sds :refer [transact!]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -149,9 +147,8 @@
 
 (deftest delete-item-test-1
   (let [*db (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
-        get-attr (fn [k e]
-                   (-> (ds/pull @*db [k] e)
-                       k))]
+        ;; get-attr (fn [k e] (-> (ds/pull @*db [k] e) k))
+        ]
     (transact! *db [{:uuid "a" :i 0}])
     (transact! *db [[:sy/delete-item-in-series :uuid :i "a"]])
     (is (= 0 (count (ds/datoms @*db :eavt))))

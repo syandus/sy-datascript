@@ -354,7 +354,8 @@
         check-all! (fn [tests]
                      (doall (map check! tests)))
 
-        print! (fn [] (doall (map #(prn %) (ds/datoms @*db :eavt))))]
+        ;; print! (fn [] (doall (map #(prn %) (ds/datoms @*db :eavt))))
+        ]
 
     (transact! *db [{:parent/uuid "p1"}
                     {:parent/uuid "p2"}

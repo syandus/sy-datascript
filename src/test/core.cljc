@@ -1,6 +1,6 @@
 (ns test.core
   (:require
-   [clojure.test :as t :refer [is are deftest testing]]
+   [clojure.test :as t :refer [is deftest]]
    [datascript.core :as ds]
    [sy-datascript.core :as sds :refer [transact!]]
    [test.series]
@@ -111,5 +111,58 @@
     (is (= 42 (get-attr :y [:uuid "bar"])))
 
     ; (doall (map #(prn %) (ds/datoms @*db :eavt)))
+
+    nil))
+
+(deftest duplication-prevention-test
+  (let [*db (ds/create-conn {:uuid {:db/unique :db.unique/identity}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*db [k] e)
+                       k))
+        ;; dump! (fn [] (doall (map #(prn %) (ds/datoms @*db :eavt))))
+        ]
+    (transact! *db [[:sy/new-item-in-series :uuid :i {:uuid "foo" :x "foo"}]])
+    (is (= 3 (count (ds/datoms @*db :eavt))))
+    (is (= "foo" (get-attr :x [:uuid "foo"])))
+
+    (transact! *db [[:sy/new-item-in-series :uuid :i {:uuid "foo" :x "bar"}]])
+    ;; (dump!)
+    (is (= 3 (count (ds/datoms @*db :eavt))))
+    (is (= "foo" (get-attr :x [:uuid "foo"])))))
+
+(deftest parented-duplication-prevention-test
+  (let [*db (ds/create-conn {:parent/uuid {:db/unique :db.unique/identity}
+                             :child/uuid {:db/unique :db.unique/identity}
+                             :parent/child {:db/valueType :db.type/ref
+                                            :db/cardinality :db.cardinality/many
+                                            :db/index true}})
+        get-attr (fn [k e]
+                   (-> (ds/pull @*db [k] e)
+                       k))
+        ;; dump! (fn [] (doall (map #(prn %) (ds/datoms @*db :eavt))))
+        ]
+    (transact! *db [[:sy/new-item-in-series :uuid :i {:parent/uuid "parent0" :x "foo"}]])
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "parent0"]  :parent/child :child/uuid :i
+                     {:child/uuid "child0" :y "bar"}]])
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "parent0"]  :parent/child :child/uuid :i
+                     {:child/uuid "child1" :y "quux"}]])
+
+    (is (= "foo" (get-attr :x [:parent/uuid "parent0"])))
+    (is (= 0 (get-attr :i [:parent/uuid "parent0"])))
+
+    (is (= "bar" (get-attr :y [:child/uuid "child0"])))
+    (is (= 0 (get-attr :i [:child/uuid "child0"])))
+
+    (is (= "quux" (get-attr :y [:child/uuid "child1"])))
+    (is (= 1 (get-attr :i [:child/uuid "child1"])))
+
+    (transact! *db [[:sy/new-item-in-parented-series
+                     [:parent/uuid "parent0"]  :parent/child :child/uuid :i
+                     {:child/uuid "child1" :y "apple"}]])
+
+    (is (= "quux" (get-attr :y [:child/uuid "child1"])))
+    (is (= 1 (get-attr :i [:child/uuid "child1"])))
 
     nil))

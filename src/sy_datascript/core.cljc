@@ -34,32 +34,52 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn new-item-in-series [db [_op id-attr index-attr tx]]
+(defn new-item-in-series
+  "Returns a tx vector with the new item's index set to the next available.
+   
+   New items with the same index-attr value as an existing item are not allowed.
+   This is to prevent the same item from being added twice to the same series."
+  [db [_op id-attr index-attr tx]]
+  (assert (map? tx) "tx must be a map!")
   (let [series (ds/q '[:find ?item-uuid ?i
                        :in $ ?id-attr ?index-attr
                        :where
                        [?e ?id-attr ?item-uuid]
                        [?e ?index-attr ?i]]
                      db id-attr index-attr)
-        n (if (= 0 (count series))
+        ids (->> (map first series)
+                 (into #{}))
+        new-id (get tx id-attr)
+        i (if (= 0 (count series))
             0
             (->> (map second series)
                  (reduce max)
                  (inc)))]
-    [(assoc tx index-attr n)]))
+    (if (contains? ids new-id)
+      []
+      [(assoc tx index-attr i)])))
 
 (defn new-item-in-parented-series
+  "Returns a tx vector with the new item's index set to the next available.
+   
+   New items with the same index-attr value as an existing item are not allowed.
+   This is to prevent the same item from being added twice to the same series."
   [db [_op parent-lookup-ref parent-child-attr id-attr index-attr tx]]
   (let [[parent-id-attr parent-id-value] parent-lookup-ref
         series (get-parented-series db parent-id-attr parent-id-value parent-child-attr
                                     id-attr index-attr)
+        ids (->> (map first series)
+                 (into #{}))
+        new-id (get tx id-attr)
         n (if (= 0 (count series))
             0
             (->> (map second series)
                  (reduce max)
                  (inc)))]
-    [(assoc tx index-attr n)
-     [:db/add parent-lookup-ref parent-child-attr [id-attr (get tx id-attr)]]]))
+    (if (contains? ids new-id)
+      []
+      [(assoc tx index-attr n)
+       [:db/add parent-lookup-ref parent-child-attr [id-attr (get tx id-attr)]]])))
 
 (defn reorder-item-in-series [db [_op id-attr index-attr id new-index]]
   (let [series (->> (ds/q '[:find ?item-uuid ?i

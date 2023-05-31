@@ -1,6 +1,5 @@
 (ns main
   (:require
-   [cljfmt.core]
    [sy-datascript.core]
    [test.core]))
 

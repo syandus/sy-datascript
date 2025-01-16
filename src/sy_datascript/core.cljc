@@ -235,7 +235,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def ^:dynamic *unix-timestamp* nil)
+(def ^:dynamic *unix-timestamp*
+  "This is in seconds. It may be in fractional seconds due to this being a JavaScript Number."
+  nil)
 
 (defn add-time-in-seconds [_db [_op attr tx]]
   (let [t (if-not (nil? *unix-timestamp*)
